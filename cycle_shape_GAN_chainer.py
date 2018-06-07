@@ -1197,8 +1197,8 @@ for epoch in range(0, N_EPOCH):
         #Shape consistency Loss
         loss_seg_X = F.softmax_cross_entropy(out_seg_X, seg_X)
         loss_seg_Y = F.softmax_cross_entropy(out_seg_Y, seg_Y)
-        loss_seg_Y2X = F.softmax_cross_entropy(out_seg_Y2X, seg_X)
-        loss_seg_X2Y = F.softmax_cross_entropy(out_seg_X2Y, seg_Y)
+        loss_seg_Y2X = F.softmax_cross_entropy(out_seg_Y2X, seg_Y)
+        loss_seg_X2Y = F.softmax_cross_entropy(out_seg_X2Y, seg_X)
 
         #total Loss
         # print("loss_adv_X_gen.data.shape", loss_adv_X_gen.data.shape)
