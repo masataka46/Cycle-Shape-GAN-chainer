@@ -1132,6 +1132,8 @@ for epoch in range(0, N_EPOCH):
     sum_loss_cycle_Y2X = np.float32(0)
     sum_loss_seg_X = np.float32(0)
     sum_loss_seg_Y = np.float32(0)
+    sum_loss_seg_Y2X = np.float32(0)
+    sum_loss_seg_X2Y = np.float32(0)
     sum_loss_seg_total = np.float32(0)
 
 
@@ -1163,8 +1165,10 @@ for epoch in range(0, N_EPOCH):
         out_dis_Y_fake = disY(images_X2Y)
 
         #Segmenttor
-        out_seg_X = segX(images_Y2X)
-        out_seg_Y = segY(images_X2Y)
+        out_seg_X = segX(images_X)
+        out_seg_Y2X = segX(images_Y2X)
+        out_seg_Y = segY(images_Y)
+        out_seg_X2Y = segY(images_X2Y)
 
         #Cycle Consistency Loss
         loss_cycle_X = F.mean(F.absolute_error(images_X, images_X2Y2X))
@@ -1193,6 +1197,8 @@ for epoch in range(0, N_EPOCH):
         #Shape consistency Loss
         loss_seg_X = F.softmax_cross_entropy(out_seg_X, seg_X)
         loss_seg_Y = F.softmax_cross_entropy(out_seg_Y, seg_Y)
+        loss_seg_Y2X = F.softmax_cross_entropy(out_seg_Y2X, seg_X)
+        loss_seg_X2Y = F.softmax_cross_entropy(out_seg_X2Y, seg_Y)
 
         #total Loss
         # print("loss_adv_X_gen.data.shape", loss_adv_X_gen.data.shape)
@@ -1200,9 +1206,9 @@ for epoch in range(0, N_EPOCH):
         # print("loss_cycle_X.data.shape", loss_cycle_X.data.shape)
         # print("loss_cycle_Y.data.shape", loss_cycle_Y.data.shape)
         loss_gen_total = loss_adv_X_gen + loss_adv_Y_gen + CO_LAMBDA * (loss_cycle_X + loss_cycle_Y) \
-                         + CO_GAMMA * (loss_seg_X + loss_seg_Y)
+                         + CO_GAMMA * (loss_seg_X + loss_seg_Y + loss_seg_Y2X + loss_seg_X2Y)
         loss_dis_total = loss_adv_X_dis + loss_adv_Y_dis
-        loss_seg_total = loss_seg_X + loss_seg_Y
+        loss_seg_total = loss_seg_X + loss_seg_Y + loss_seg_Y2X + loss_seg_X2Y
 
         # for print
         sum_loss_gen_total += loss_gen_total.data
@@ -1215,6 +1221,8 @@ for epoch in range(0, N_EPOCH):
         sum_loss_cycle_X2Y += loss_cycle_Y.data
         sum_loss_seg_X += loss_seg_X.data
         sum_loss_seg_Y += loss_seg_Y.data
+        sum_loss_seg_Y2X += loss_seg_Y2X.data
+        sum_loss_seg_X2Y += loss_seg_X2Y.data
         sum_loss_seg_total += loss_seg_total.data
 
         # print("sum_loss_gen_X", sum_loss_gen_X)
@@ -1253,7 +1261,8 @@ for epoch in range(0, N_EPOCH):
     print("Discriminator: Loss X =", sum_loss_dis_X / len_data, ", Loss Y =", sum_loss_dis_Y / len_data)
     print("Generator: Loss adv X=", sum_loss_gen_X / len_data, ", Loss adv Y =", sum_loss_gen_Y / len_data,)
     print("Generator: Loss cycle Y2X=", sum_loss_cycle_Y2X / len_data, ", Loss cycle X2Y =", sum_loss_cycle_X2Y / len_data,)
-    print("Segmentor: Loss seg X=", sum_loss_seg_X / len_data, ", Loss seg Y =", sum_loss_seg_Y / len_data,)
+    print("Segmentor: Loss seg X=", sum_loss_seg_X / len_data, ", Loss seg Y =", sum_loss_seg_Y / len_data,
+          "Loss seg Y2X=", sum_loss_seg_Y2X / len_data, ", Loss seg X2Y =", sum_loss_seg_X2Y / len_data)
 
 
     if epoch % 5 == 0:
